@@ -67,6 +67,9 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
+         <widget class="user_map::MapView" name="map_view"/>
+        </item>
+        <item>
          <widget class="QPushButton" name="button_load_map">
           <property name="text">
            <string>Load Map</string>
@@ -358,6 +361,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>user_map::MapView</class>
+   <extends>QGraphicsView</extends>
+   <header>user_map/map_view.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

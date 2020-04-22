@@ -34,7 +34,6 @@ Q_OBJECT
 
 public:
 	MainWindow(int argc, char** argv, QWidget *parent = 0);
-	~MainWindow();
 
 	void ReadSettings(); // Load up qt program settings at startup
 	void WriteSettings(); // Save qt program settings when closing
@@ -60,7 +59,6 @@ public Q_SLOTS:
 private:
 	Ui::MainWindowDesign ui;
 	QNode qnode;
-  MapView* map_view;
 };
 
 }  // namespace user_map

@@ -15,7 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     eigen_conversions
     grid_map_ros)
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
+
 # Use this to define what the package will export (e.g. libs, headers).
 # Since the default here is to produce only a binary, we don't worry about
 # exporting anything. 

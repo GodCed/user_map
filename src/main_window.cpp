@@ -34,13 +34,11 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	ui.setupUi(this); // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
   QObject::connect(ui.actionAbout_Qt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt())); // qApp is a global variable for the application
 
-  map_view = new MapView(this);
-  ui.tab_map->layout()->addWidget(map_view);
-  QObject::connect(&qnode, SIGNAL(mapImageUpdated(QImage)), map_view, SLOT(updateOccupancyGrid(QImage)));
+  QObject::connect(&qnode, SIGNAL(mapImageUpdated(QImage)), ui.map_view, SLOT(updateOccupancyGrid(QImage)));
 
   ReadSettings();
 	setWindowIcon(QIcon(":/images/icon.png"));
-	ui.tab_manager->setCurrentIndex(0); // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
+  //ui.tab_manager->setCurrentIndex(0); // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
   QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
 
 	/*********************
@@ -55,10 +53,6 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   if ( ui.checkbox_remember_settings->isChecked() ) {
       on_button_connect_clicked(true);
   }
-}
-
-MainWindow::~MainWindow() {
-  delete map_view;
 }
 
 /*****************************************************************************
@@ -135,7 +129,7 @@ void MainWindow::updateLoggingView() {
 
 void MainWindow::resizeEvent(QResizeEvent *event) {
   QMainWindow::resizeEvent(event);
-  map_view->fitPixmap();
+  ui.map_view->fitPixmap();
 }
 
 /*****************************************************************************
