@@ -28,6 +28,8 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <grid_map_core/GridMap.hpp>
 
+#include "zone.hpp"
+
 
 /*****************************************************************************
 ** Namespaces
@@ -74,8 +76,13 @@ Q_SIGNALS:
   void rosShutdown();
   void mapImageUpdated(QImage image);
 
+public Q_SLOTS:
+  void addZone(Zone zone);
+  void clearZones();
+
 private:
   void updateMap(const nav_msgs::OccupancyGridConstPtr &msg);
+  void publishMap();
 
 	int init_argc;
 	char** init_argv;

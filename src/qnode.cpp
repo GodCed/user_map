@@ -14,6 +14,7 @@
 #include <ros/network.h>
 #include <grid_map_ros/GridMapRosConverter.hpp>
 #include <grid_map_cv/GridMapCvConverter.hpp>
+#include <grid_map_core/iterators/SubmapIterator.hpp>
 #include <nav_msgs/GetMap.h>
 #include <string>
 #include <std_msgs/String.h>
@@ -148,9 +149,12 @@ void QNode::updateMap(const nav_msgs::OccupancyGridConstPtr &msg) {
 
   grid_map::GridMapRosConverter::fromOccupancyGrid(*msg, "occupancy", map);
 
-  grid_map_msgs::GridMap map_msg;
-  grid_map::GridMapRosConverter::toMessage(map, map_msg);
-  map_publisher.publish(map_msg);
+  auto layers = map.getLayers();
+  if (std::find(layers.begin(), layers.end(), std::string("orientation")) == layers.end()) {
+    map.add("orientation", 0);
+  }
+
+  publishMap();
 
   cv::Mat map_cvimage;
   QImage map_qimage;
@@ -168,12 +172,43 @@ void QNode::updateMap(const nav_msgs::OccupancyGridConstPtr &msg) {
   Q_EMIT mapImageUpdated(map_qimage);
 }
 
+void QNode::publishMap()
+{
+  grid_map_msgs::GridMap map_msg;
+  grid_map::GridMapRosConverter::toMessage(map, map_msg);
+  map_publisher.publish(map_msg);
+}
+
 void QNode::loadMap() {
   nav_msgs::GetMap map_srv;
 
   if (ros::service::call(occupancy_grid_service, map_srv)) {
     updateMap(boost::make_shared<nav_msgs::OccupancyGrid>(map_srv.response.map));
   }
+}
+
+void QNode::addZone(Zone zone)
+{
+  //int orientation_value = 1000*zone.mode + zone.angle;
+  int orientation_value = zone.angle;
+
+  grid_map::Index submap_start_index(zone.rect.top(), zone.rect.left());
+  grid_map::Index submap_buffer_size(zone.rect.height(), zone.rect.width());
+
+  for (grid_map::SubmapIterator i(map, submap_start_index, submap_buffer_size); !i.isPastEnd(); ++i) {
+    map.at("orientation", *i) = orientation_value;
+  }
+
+  publishMap();
+}
+
+void QNode::clearZones()
+{
+  auto layers = map.getLayers();
+  if (std::find(layers.begin(), layers.end(), std::string("orientation")) != layers.end()) {
+      map["orientation"].setZero();
+  }
+  publishMap();
 }
 
 }  // namespace user_map

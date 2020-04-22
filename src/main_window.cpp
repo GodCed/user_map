@@ -12,8 +12,9 @@
 #include <QtGui>
 #include <QMessageBox>
 #include <iostream>
-#include "../include/user_map/map_view.hpp"
-#include "../include/user_map/main_window.hpp"
+#include "user_map/map_view.hpp"
+#include "user_map/main_window.hpp"
+#include "user_map/zone.hpp"
 
 /*****************************************************************************
 ** Namespaces
@@ -34,11 +35,8 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	ui.setupUi(this); // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
   QObject::connect(ui.actionAbout_Qt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt())); // qApp is a global variable for the application
 
-  QObject::connect(&qnode, SIGNAL(mapImageUpdated(QImage)), ui.map_view, SLOT(updateOccupancyGrid(QImage)));
-
   ReadSettings();
 	setWindowIcon(QIcon(":/images/icon.png"));
-  //ui.tab_manager->setCurrentIndex(0); // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
   QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
 
 	/*********************
@@ -46,6 +44,21 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 	**********************/
 	ui.view_logging->setModel(qnode.loggingModel());
   QObject::connect(&qnode, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
+
+  /*********************
+  ** Map View
+  **********************/
+
+  orientation_mode_map.insert("Tangent", tangent);
+  orientation_mode_map.insert("Parallel", parallel);
+  orientation_mode_map.insert("Fixed", fixed);
+
+  ui.combo_orientation_mode->insertItems(0, orientation_mode_map.keys());
+
+  QObject::connect(&qnode, SIGNAL(mapImageUpdated(QImage)), ui.map_view, SLOT(updateOccupancyGrid(QImage)));
+  QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), ui.map_view, SLOT(clearZones()));
+  QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), &qnode, SLOT(clearZones()));
+  QObject::connect(ui.map_view, SIGNAL(newZone(Zone)), &qnode, SLOT(addZone(Zone)));
 
   /*********************
   ** Auto Start
@@ -111,7 +124,16 @@ void MainWindow::on_checkbox_use_environment_stateChanged(int state) {
 
 void MainWindow::on_button_load_map_clicked()
 {
-    qnode.loadMap();
+  qnode.loadMap();
+}
+
+void user_map::MainWindow::on_button_add_zone_clicked()
+{
+  Zone zone;
+  zone.angle = ui.spin_box_orientation->value();
+  zone.mode = orientation_mode_map[ui.combo_orientation_mode->currentText()];
+
+  ui.map_view->addZone(zone);
 }
 
 /*****************************************************************************
