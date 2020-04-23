@@ -2,23 +2,16 @@
 #define ZONE_HPP
 
 #include <QRect>
+#include "orientation_mode.hpp"
 
 namespace user_map {
 
-enum OrientationMode
-{
-  none,
-  tangent,
-  parallel,
-  fixed
-};
-
-typedef struct
-{
-  QRect rect;
-  OrientationMode mode;
-  int angle;
-} Zone;
+  typedef struct
+  {
+    QRect rect;
+    OrientationMode mode;
+    int angle;
+  } Zone;
 
 }
 

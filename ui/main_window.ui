@@ -76,7 +76,14 @@
             <widget class="QComboBox" name="combo_orientation_mode"/>
            </item>
            <item>
-            <widget class="QSpinBox" name="spin_box_orientation"/>
+            <widget class="QSpinBox" name="spin_box_orientation">
+             <property name="suffix">
+              <string> deg</string>
+             </property>
+             <property name="maximum">
+              <number>359</number>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QPushButton" name="button_add_zone">

@@ -189,8 +189,7 @@ void QNode::loadMap() {
 
 void QNode::addZone(Zone zone)
 {
-  //int orientation_value = 1000*zone.mode + zone.angle;
-  int orientation_value = zone.angle;
+  int orientation_value = 1000*zone.mode + zone.angle;
 
   grid_map::Index submap_start_index(zone.rect.top(), zone.rect.left());
   grid_map::Index submap_buffer_size(zone.rect.height(), zone.rect.width());

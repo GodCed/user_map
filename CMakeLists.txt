@@ -14,13 +14,20 @@ find_package(catkin REQUIRED COMPONENTS
     qt_build
     roscpp
     eigen_conversions
-    grid_map_ros)
+    grid_map_ros
+)
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 # Use this to define what the package will export (e.g. libs, headers).
-# Since the default here is to produce only a binary, we don't worry about
-# exporting anything. 
-catkin_package()
+catkin_package(
+    INCLUDE_DIRS
+        include
+    CATKIN_DEPENDS
+        qt_build
+        roscpp
+        eigen_conversions
+        grid_map_ros
+)
 
 ##############################################################################
 # Dependencies
@@ -60,4 +67,6 @@ file(GLOB_RECURSE QT_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINK
 add_executable(user_map ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP})
 target_link_libraries(user_map ${QT_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 install(TARGETS user_map RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
+install(DIRECTORY include/user_map
+    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)

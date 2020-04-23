@@ -12,9 +12,9 @@
 #include <QtGui>
 #include <QMessageBox>
 #include <iostream>
-#include "user_map/map_view.hpp"
-#include "user_map/main_window.hpp"
-#include "user_map/zone.hpp"
+#include <user_map/main_window.hpp>
+#include <user_map/map_view.hpp>
+#include <user_map/zone.hpp>
 
 /*****************************************************************************
 ** Namespaces
