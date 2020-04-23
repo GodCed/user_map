@@ -9,8 +9,7 @@ namespace user_map
 
 MapView::MapView(QWidget *parent): QGraphicsView(parent)
 {
-  selection_rect.setPen(QPen(Qt::red, 5, Qt::DashLine));
-
+  selection_rect.setPen(QPen(QColor(255, 0, 128, 200), 5, Qt::DashLine));
   setScene(&scene);
 }
 
@@ -53,7 +52,32 @@ void MapView::mouseReleaseEvent(QMouseEvent *event)
     QPointF drag_end = occupancy_grid_ptr->mapFromScene(pointer_pos_in_scene);
 
     QRect zone_rect = rectFromTwoPoints(drag_start.toPoint(), drag_end.toPoint());
-    zone_rect_ptrs.push_back(scene.addRect(zone_rect));
+    zone_rect_ptrs.push_back(
+          scene.addRect(
+            zone_rect,
+            QPen(QColor(0, 0, 255, 100), 5, Qt::SolidLine),
+            QBrush(QColor(0, 0, 255, 50))));
+
+    QString label_string_prefix;
+    switch (new_zone.mode) {
+      case OrientationMode::fixed: label_string_prefix = "F "; break;
+      case OrientationMode::tangent: label_string_prefix = "T "; break;
+      case OrientationMode::parallel: label_string_prefix = "P "; break;
+      default: break;
+    }
+
+    QString raw_label_string("%2 deg");
+    QString label_string = raw_label_string.arg(new_zone.angle);
+
+    QGraphicsSimpleTextItem* label_ptr = scene.addSimpleText(label_string_prefix + label_string);
+    label_ptr->setPos(zone_rect.topLeft() + QPoint(5,5));
+    label_ptr->setBrush(QBrush(QColor(0,0,255,100)));
+
+    QFont label_font = label_ptr->font();
+    label_font.setBold(true);
+    label_ptr->setFont(label_font);
+
+    zone_label_ptrs.push_back(label_ptr);
 
     new_zone.rect = zone_rect;
     Q_EMIT newZone(new_zone);
@@ -103,6 +127,12 @@ void MapView::clearZones()
     delete zone;
   }
   zone_rect_ptrs.clear();
+
+  for(auto &label: zone_label_ptrs) {
+    scene.removeItem(label);
+    delete label;
+  }
+  zone_label_ptrs.clear();
 }
 
 }

@@ -2,6 +2,7 @@
 #define MAP_VIEW_H
 
 #include <QGraphicsView>
+#include <QGraphicsSimpleTextItem>
 #include <QGraphicsRectItem>
 
 #include "zone.hpp"
@@ -24,6 +25,7 @@ protected:
 
   QGraphicsRectItem selection_rect;
   std::vector<QGraphicsRectItem*> zone_rect_ptrs;
+  std::vector<QGraphicsSimpleTextItem*> zone_label_ptrs;
 
   bool is_dragging = false;
   bool is_adding = false;
