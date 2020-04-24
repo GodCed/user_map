@@ -51,6 +51,8 @@ public Q_SLOTS:
   void on_button_load_map_clicked();
 	void on_checkbox_use_environment_stateChanged(int state);
   void on_button_add_zone_clicked();
+  void on_actionLoad_Zones_triggered();
+  void on_actionSave_Zones_triggered();
 
   /******************************************
   ** Manual connections
@@ -59,8 +61,8 @@ public Q_SLOTS:
 
 protected:
 	Ui::MainWindowDesign ui;
-	QNode qnode;
 
+	QNode qnode;
   QMap<QString, OrientationMode> orientation_mode_map;
 };
 

@@ -59,6 +59,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
   QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), ui.map_view, SLOT(clearZones()));
   QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), &qnode, SLOT(clearZones()));
   QObject::connect(ui.map_view, SIGNAL(newZone(Zone)), &qnode, SLOT(addZone(Zone)));
+  QObject::connect(ui.map_view, SIGNAL(clearedZones()), &qnode, SLOT(clearZones()));
 
   /*********************
   ** Auto Start
@@ -127,13 +128,42 @@ void MainWindow::on_button_load_map_clicked()
   qnode.loadMap();
 }
 
-void user_map::MainWindow::on_button_add_zone_clicked()
+void MainWindow::on_button_add_zone_clicked()
 {
   Zone zone;
   zone.angle = ui.spin_box_orientation->value();
   zone.mode = orientation_mode_map[ui.combo_orientation_mode->currentText()];
 
   ui.map_view->addZone(zone);
+}
+
+void MainWindow::on_actionSave_Zones_triggered()
+{
+  QFile save_file("zones.user");
+  if(!save_file.open(QIODevice::WriteOnly)) {
+    QMessageBox::warning(this, "Save Failed", "Couln't open ~/.ros/zones.user for writing");
+    return;
+  }
+
+  QDataStream save_stream(&save_file);
+  ui.map_view->saveZonesToFile(save_stream);
+
+  save_file.close();
+  QMessageBox::information(this, "Zones Saved", "Saved zones to ~/.ros/zones.user");
+}
+
+void MainWindow::on_actionLoad_Zones_triggered()
+{
+  QFile load_file("zones.user");
+  if(!load_file.open(QIODevice::ReadOnly)) {
+    QMessageBox::warning(this, "Load Failed", "Couln't open ~/.ros/zones.user for reading");
+  }
+
+  QDataStream load_stream(&load_file);
+  ui.map_view->loadZonesFromFile(load_stream);
+
+  load_file.close();
+  QMessageBox::information(this, "Zones Loaded", "Loaded zones from ~/.ros/zones.user");
 }
 
 /*****************************************************************************
