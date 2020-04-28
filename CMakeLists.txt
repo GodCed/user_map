@@ -27,6 +27,8 @@ catkin_package(
         roscpp
         eigen_conversions
         grid_map_ros
+    DEPENDS
+        OpenCV
 )
 
 ##############################################################################
