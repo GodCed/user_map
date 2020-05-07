@@ -1,163 +1,172 @@
-#include "../include/user_map/map_view.hpp"
-
 #include <iostream>
 #include <QMouseEvent>
 #include <QGraphicsPixmapItem>
+#include <user_map/map_view.hpp>
 
 namespace user_map
 {
 
-MapView::MapView(QWidget *parent): QGraphicsView(parent)
-{
-  selection_rect.setPen(QPen(QColor(255, 0, 128, 200), 5, Qt::DashLine));
-  setScene(&scene);
-}
+  MapView::MapView(QWidget *parent): QGraphicsView(parent)
+  {
+    selection_rect_.setPen(QPen(QColor(255, 0, 128, 200), 5, Qt::DashLine));
+    setScene(&scene_);
+  }
 
-void MapView::mousePressEvent(QMouseEvent* event)
-{
-  if(event->button() == Qt::LeftButton && occupancy_grid_ptr != nullptr && is_adding) {
-    is_dragging = true;
-    is_adding = false;
-    setCursor(Qt::CursorShape::DragMoveCursor);
+  void MapView::mousePressEvent(QMouseEvent* event)
+  {
+    if(event->button() == Qt::LeftButton && occupancy_grid_ptr_ != nullptr && is_adding_) {
+      is_dragging_ = true;
+      is_adding_ = false;
+      setCursor(Qt::CursorShape::DragMoveCursor);
+
+      QPointF pointer_pos_in_scene = mapToScene(event->pos());
+      drag_start_ = occupancy_grid_ptr_->mapFromScene(pointer_pos_in_scene);
+
+      selection_rect_.setRect(QRect(drag_start_.toPoint(), drag_start_.toPoint()));
+      scene_.addItem(&selection_rect_);
+    }
+  }
+
+  void MapView::mouseMoveEvent(QMouseEvent *event)
+  {
+    if(!is_dragging_) {
+      return;
+    }
 
     QPointF pointer_pos_in_scene = mapToScene(event->pos());
-    drag_start = occupancy_grid_ptr->mapFromScene(pointer_pos_in_scene);
+    QPointF drag_now = occupancy_grid_ptr_->mapFromScene(pointer_pos_in_scene);
 
-    selection_rect.setRect(QRect(drag_start.toPoint(), drag_start.toPoint()));
-    scene.addItem(&selection_rect);
-  }
-}
-
-void MapView::mouseMoveEvent(QMouseEvent *event)
-{
-  if(!is_dragging) {
-    return;
+    QRect drag_rect = rectFromTwoPoints(drag_start_.toPoint(), drag_now.toPoint());
+    selection_rect_.setRect(drag_rect);
   }
 
-  QPointF pointer_pos_in_scene = mapToScene(event->pos());
-  QPointF drag_now = occupancy_grid_ptr->mapFromScene(pointer_pos_in_scene);
+  void MapView::mouseReleaseEvent(QMouseEvent *event)
+  {
+    if(event->button() == Qt::LeftButton && is_dragging_) {
+      is_dragging_ = false;
+      setCursor(Qt::CursorShape::ArrowCursor);
+      scene_.removeItem(&selection_rect_);
 
-  QRect drag_rect = rectFromTwoPoints(drag_start.toPoint(), drag_now.toPoint());
-  selection_rect.setRect(drag_rect);
-}
+      QPointF pointer_pos_in_scene = mapToScene(event->pos());
+      QPointF drag_end = occupancy_grid_ptr_->mapFromScene(pointer_pos_in_scene);
 
-void MapView::mouseReleaseEvent(QMouseEvent *event)
-{
-  if(event->button() == Qt::LeftButton && is_dragging) {
-    is_dragging = false;
-    setCursor(Qt::CursorShape::ArrowCursor);
-    scene.removeItem(&selection_rect);
+      QRect zone_rect = rectFromTwoPoints(drag_start_.toPoint(), drag_end.toPoint());
+      new_zone_.rect = zone_rect;
 
-    QPointF pointer_pos_in_scene = mapToScene(event->pos());
-    QPointF drag_end = occupancy_grid_ptr->mapFromScene(pointer_pos_in_scene);
-
-    QRect zone_rect = rectFromTwoPoints(drag_start.toPoint(), drag_end.toPoint());
-    new_zone.rect = zone_rect;
-
-    zones.push_back(new_zone);
-    drawZone(new_zone);
-    Q_EMIT newZone(new_zone);
-  }
-}
-
-void MapView::drawZone(Zone zone)
-{
-  zone_rect_ptrs.push_back(
-        scene.addRect(
-          zone.rect,
-          QPen(QColor(0, 0, 255, 100), 5, Qt::SolidLine),
-          QBrush(QColor(0, 0, 255, 50))));
-
-  QString label_string_prefix;
-  switch (zone.mode) {
-    case OrientationMode::fixed: label_string_prefix = "F "; break;
-    case OrientationMode::tangent: label_string_prefix = "T "; break;
-    case OrientationMode::parallel: label_string_prefix = "P "; break;
-    default: break;
+      zones_.push_back(new_zone_);
+      drawZone(new_zone_);
+      Q_EMIT newZone(new_zone_);
+    }
   }
 
-  QString raw_label_string("%2 deg");
-  QString label_string = raw_label_string.arg(zone.angle);
+  void MapView::drawZone(UserZone zone)
+  {
+    zone_rect_ptrs_.push_back(
+          scene_.addRect(
+            zone.rect,
+            QPen(QColor(0, 0, 255, 100), 5, Qt::SolidLine),
+            QBrush(QColor(0, 0, 255, 50))));
 
-  QGraphicsSimpleTextItem* label_ptr = scene.addSimpleText(label_string_prefix + label_string);
-  label_ptr->setPos(zone.rect.topLeft() + QPoint(5,5));
-  label_ptr->setBrush(QBrush(QColor(0,0,255,100)));
+    QString label_string_prefix;
+    switch (zone.mode) {
+      case OrientationMode::fixed: label_string_prefix = "F "; break;
+      case OrientationMode::tangent: label_string_prefix = "T "; break;
+      case OrientationMode::parallel: label_string_prefix = "P "; break;
+      default: break;
+    }
 
-  QFont label_font = label_ptr->font();
-  label_font.setBold(true);
-  label_ptr->setFont(label_font);
+    QString raw_label_string("%2 deg");
+    QString label_string = raw_label_string.arg(zone.angle);
 
-  zone_label_ptrs.push_back(label_ptr);
-}
+    QGraphicsSimpleTextItem* label_ptr = scene_.addSimpleText(label_string_prefix + label_string);
+    label_ptr->setPos(zone.rect.topLeft() + QPoint(5,5));
+    label_ptr->setBrush(QBrush(QColor(0,0,255,100)));
 
-void MapView::fitPixmap()
-{
-  fitInView(scene.itemsBoundingRect(), Qt::AspectRatioMode::KeepAspectRatio);
-}
+    QFont label_font = label_ptr->font();
+    label_font.setBold(true);
+    label_ptr->setFont(label_font);
 
-void MapView::updateOccupancyGrid(QImage grid)
-{
-  if(occupancy_grid_ptr != nullptr) {
-    scene.removeItem(static_cast<QGraphicsItem*>(occupancy_grid_ptr));
-    delete occupancy_grid_ptr;
-    occupancy_grid_ptr = nullptr;
+    zone_label_ptrs_.push_back(label_ptr);
   }
 
-  occupancy_grid_ptr = scene.addPixmap(QPixmap::fromImage(grid));
-  occupancy_grid_ptr->setZValue(-1);
-  fitPixmap();
-}
-
-QRect MapView::rectFromTwoPoints(QPoint a, QPoint b)
-{
-  int left = static_cast<int>(a.x() < b.x() ? a.x() : b.x());
-  int top = static_cast<int>(a.y() < b.y() ? a.y() : b.y());
-
-  int right = static_cast<int>(a.x() > b.x() ? a.x() : b.x());
-  int bottom = static_cast<int>(a.y() > b.y() ? a.y() : b.y());
-
-  return QRect(QPoint(left, top), QPoint(right, bottom));
-}
-
-void MapView::addZone(Zone zone)
-{
-  new_zone = zone;
-  is_adding = true;
-  setCursor(Qt::CursorShape::CrossCursor);
-}
-
-void MapView::clearZones()
-{
-  for(auto &zone: zone_rect_ptrs) {
-    scene.removeItem(zone);
-    delete zone;
+  void MapView::fitScene()
+  {
+    fitInView(scene_.itemsBoundingRect(), Qt::AspectRatioMode::KeepAspectRatio);
   }
-  zone_rect_ptrs.clear();
 
-  for(auto &label: zone_label_ptrs) {
-    scene.removeItem(label);
-    delete label;
+  void MapView::updateOccupancyGrid(QImage grid)
+  {
+    if(occupancy_grid_ptr_ != nullptr) {
+      scene_.removeItem(static_cast<QGraphicsItem*>(occupancy_grid_ptr_));
+      delete occupancy_grid_ptr_;
+      occupancy_grid_ptr_ = nullptr;
+    }
+
+    occupancy_grid_ptr_ = scene_.addPixmap(QPixmap::fromImage(grid));
+    occupancy_grid_ptr_->setZValue(-1);
+    fitScene();
   }
-  zone_label_ptrs.clear();
 
-  zones.clear();
-}
+  QRect MapView::rectFromTwoPoints(QPoint a, QPoint b)
+  {
+    int left = static_cast<int>(a.x() < b.x() ? a.x() : b.x());
+    int top = static_cast<int>(a.y() < b.y() ? a.y() : b.y());
 
-void MapView::loadZonesFromFile(QDataStream& filestream)
-{
-  clearZones();
-  Q_EMIT clearedZones();
+    int right = static_cast<int>(a.x() > b.x() ? a.x() : b.x());
+    int bottom = static_cast<int>(a.y() > b.y() ? a.y() : b.y());
 
-  filestream >> zones;
-  for(Zone zone: zones) {
-    drawZone(zone);
-    Q_EMIT newZone(zone);
+    return QRect(QPoint(left, top), QPoint(right, bottom));
   }
-}
 
-void MapView::saveZonesToFile(QDataStream& filestream)
-{
-  filestream << zones;
-}
+  void MapView::addZone(UserZone zone)
+  {
+    new_zone_ = zone;
+    is_adding_ = true;
+    setCursor(Qt::CursorShape::CrossCursor);
+  }
+
+  void MapView::addZones(QVector<UserZone> zones)
+  {
+    clearZones();
+    for(UserZone &zone: zones)
+    {
+      drawZone(zone);
+      zones_.push_back(zone);
+    }
+  }
+
+  void MapView::clearZones()
+  {
+    for(auto &zone: zone_rect_ptrs_) {
+      scene_.removeItem(zone);
+      delete zone;
+    }
+    zone_rect_ptrs_.clear();
+
+    for(auto &label: zone_label_ptrs_) {
+      scene_.removeItem(label);
+      delete label;
+    }
+    zone_label_ptrs_.clear();
+
+    zones_.clear();
+  }
+
+  void MapView::loadZonesFromFile(QDataStream& filestream)
+  {
+    clearZones();
+    Q_EMIT clearedZones();
+
+    filestream >> zones_;
+    for(UserZone zone: zones_) {
+      drawZone(zone);
+      Q_EMIT newZone(zone);
+    }
+  }
+
+  void MapView::saveZonesToFile(QDataStream& filestream)
+  {
+    filestream << zones_;
+  }
 
 }

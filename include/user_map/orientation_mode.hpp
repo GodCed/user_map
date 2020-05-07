@@ -15,6 +15,10 @@ namespace user_map {
     return  static_cast<OrientationMode>(value / 1000);
   }
 
+  inline int value_from_OrientationMode(OrientationMode mode, int angle) {
+    return 1000*mode + angle;
+  }
+
 }
 
 #endif // ORIENTATION_MODE_HPP

@@ -15,29 +15,29 @@ Q_OBJECT
 
   public:
     MapView(QWidget* parent=nullptr);
-    void fitPixmap();
+    void fitScene();
 
     void saveZonesToFile(QDataStream& filestream);
     void loadZonesFromFile(QDataStream& filestream);
 
   private:
-    QGraphicsScene scene;
+    QGraphicsScene scene_;
 
-    QGraphicsPixmapItem* occupancy_grid_ptr = nullptr;
+    QGraphicsPixmapItem* occupancy_grid_ptr_ = nullptr;
 
-    QGraphicsRectItem selection_rect;
-    std::vector<QGraphicsRectItem*> zone_rect_ptrs;
-    std::vector<QGraphicsSimpleTextItem*> zone_label_ptrs;
+    QGraphicsRectItem selection_rect_;
+    std::vector<QGraphicsRectItem*> zone_rect_ptrs_;
+    std::vector<QGraphicsSimpleTextItem*> zone_label_ptrs_;
 
-    bool is_dragging = false;
-    bool is_adding = false;
-    QPointF drag_start;
-    Zone new_zone;
+    bool is_dragging_ = false;
+    bool is_adding_ = false;
+    QPointF drag_start_;
+    UserZone new_zone_;
 
-    QVector<Zone> zones;
+    QVector<UserZone> zones_;
 
     QRect rectFromTwoPoints(QPoint a, QPoint b);
-    void drawZone(Zone zone);
+    void drawZone(UserZone zone);
 
     void mousePressEvent(QMouseEvent* event);
     void mouseReleaseEvent(QMouseEvent* event);
@@ -45,11 +45,12 @@ Q_OBJECT
 
   public Q_SLOTS:
     void updateOccupancyGrid(QImage grid);
-    void addZone(Zone zone);
+    void addZone(UserZone zone);
+    void addZones(QVector<UserZone> zones);
     void clearZones();
 
   Q_SIGNALS:
-    void newZone(Zone);
+    void newZone(UserZone);
     void clearedZones();
 };
 
