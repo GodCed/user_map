@@ -20,6 +20,8 @@ namespace user_map
     orientation_mode_map.insert("Fixed", fixed);
     ui.combo_orientation_mode->insertItems(0, orientation_mode_map.keys());
 
+    ui.dial_orientation->setValue(180);
+
     QObject::connect(&qnode, SIGNAL(mapImageUpdated(QImage)), ui.map_view, SLOT(updateOccupancyGrid(QImage)));
     QObject::connect(&qnode, SIGNAL(newZones(QVector<UserZone>)), ui.map_view, SLOT(addZones(QVector<UserZone>)));
     QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), ui.map_view, SLOT(clearZones()));
@@ -84,4 +86,19 @@ namespace user_map
   {
       QMessageBox::about(this, tr("About ..."),tr("<h2>PACKAGE_NAME Test Program 0.10</h2><p>Copyright Yujin Robot</p><p>This package needs an about description.</p>"));
   }
+
+  void MainWindow::on_dial_orientation_valueChanged(int value)
+  {
+     int offset_value = (value+180) % 360;
+     int reversed_value = 360 - offset_value;
+     ui.spin_box_orientation->setValue(reversed_value);
+  }
+
+  void MainWindow::on_spin_box_orientation_valueChanged(int value)
+  {
+    int dial_value = (360 - value + 180) % 360;
+    ui.dial_orientation->setValue(dial_value);
+  }
 }  // namespace user_map
+
+

@@ -17,17 +17,20 @@ namespace user_map
     ~MainWindow();
     void resizeEvent(QResizeEvent *event); // Overloaded function
 
-  public Q_SLOTS:
+  private Q_SLOTS:
     void on_actionAbout_triggered();
     void on_button_add_zone_clicked();
     void on_actionLoad_Zones_triggered();
     void on_actionSave_Zones_triggered();
+    void on_dial_orientation_valueChanged(int value);
+    void on_spin_box_orientation_valueChanged(int arg1);
 
   protected:
     Ui::MainWindowDesign ui;
 
     QNode qnode;
     QMap<QString, OrientationMode> orientation_mode_map;
+
   };
 
 }  // namespace user_map
