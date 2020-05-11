@@ -14,16 +14,27 @@ namespace user_map
 
   void MapView::mousePressEvent(QMouseEvent* event)
   {
-    if(event->button() == Qt::LeftButton && occupancy_grid_ptr_ != nullptr && is_adding_) {
-      is_dragging_ = true;
-      is_adding_ = false;
-      setCursor(Qt::CursorShape::DragMoveCursor);
+    if(event->button() == Qt::LeftButton && occupancy_grid_ptr_ != nullptr) {
+      if(is_adding_) {
+        is_dragging_ = true;
+        is_adding_ = false;
+        setCursor(Qt::CursorShape::DragMoveCursor);
 
-      QPointF pointer_pos_in_scene = mapToScene(event->pos());
-      drag_start_ = occupancy_grid_ptr_->mapFromScene(pointer_pos_in_scene);
+        QPointF pointer_pos_in_scene = mapToScene(event->pos());
+        drag_start_ = occupancy_grid_ptr_->mapFromScene(pointer_pos_in_scene);
 
-      selection_rect_.setRect(QRect(drag_start_.toPoint(), drag_start_.toPoint()));
-      scene_.addItem(&selection_rect_);
+        selection_rect_.setRect(QRect(drag_start_.toPoint(), drag_start_.toPoint()));
+        scene_.addItem(&selection_rect_);
+      }
+      else {
+        QGraphicsRectItem *clicked_item = reinterpret_cast<QGraphicsRectItem*>(itemAt(event->pos()));
+        if(std::find(zone_rect_ptrs_.begin(), zone_rect_ptrs_.end(), clicked_item) != zone_rect_ptrs_.end()) {
+          selectZone(clicked_item);
+        }
+        else {
+          clearSelection();
+        }
+      }
     }
   }
 
@@ -61,12 +72,6 @@ namespace user_map
 
   void MapView::drawZone(UserZone zone)
   {
-    zone_rect_ptrs_.push_back(
-          scene_.addRect(
-            zone.rect,
-            QPen(QColor(0, 0, 255, 100), 5, Qt::SolidLine),
-            QBrush(QColor(0, 0, 255, 50))));
-
     QString label_string_prefix;
     switch (zone.mode) {
       case OrientationMode::fixed: label_string_prefix = "F "; break;
@@ -87,6 +92,34 @@ namespace user_map
     label_ptr->setFont(label_font);
 
     zone_label_ptrs_.push_back(label_ptr);
+
+    zone_rect_ptrs_.push_back(
+          scene_.addRect(
+            zone.rect,
+            QPen(QColor(0, 0, 255, 100), 5, Qt::SolidLine),
+            QBrush(QColor(0, 0, 255, 50))));
+  }
+
+  void MapView::selectZone(QGraphicsRectItem *zone_rect_ptr)
+  {
+    clearSelection();
+
+    zone_rect_ptr->setPen(QPen(QColor(0, 128, 128, 100), 5, Qt::DashLine));
+    zone_rect_ptr->setBrush(QBrush(QColor(0, 128, 128, 50)));
+
+    selected_rect_ptr_ = zone_rect_ptr;
+  }
+
+  void MapView::clearSelection()
+  {
+    if(selected_rect_ptr_ == nullptr) {
+      return;
+    }
+
+    selected_rect_ptr_->setPen(QPen(QColor(0, 0, 255, 100), 5, Qt::SolidLine));
+    selected_rect_ptr_->setBrush(QBrush(QColor(0, 0, 255, 50)));
+
+    selected_rect_ptr_ = nullptr;
   }
 
   void MapView::fitScene()
@@ -123,6 +156,36 @@ namespace user_map
     new_zone_ = zone;
     is_adding_ = true;
     setCursor(Qt::CursorShape::CrossCursor);
+  }
+
+  void MapView::cancelZone()
+  {
+    is_adding_ = false;
+    setCursor(Qt::CursorShape::ArrowCursor);
+  }
+
+  void MapView::deleteZone()
+  {
+    if(selected_rect_ptr_ == nullptr) {
+      return;
+    }
+
+    auto rect_it = std::find(zone_rect_ptrs_.begin(), zone_rect_ptrs_.end(), selected_rect_ptr_);
+    long index = rect_it - zone_rect_ptrs_.begin();
+    Q_EMIT deletedZone(index);
+
+    zone_rect_ptrs_.erase(rect_it);
+    scene_.removeItem(selected_rect_ptr_);
+    delete selected_rect_ptr_;
+    selected_rect_ptr_ = nullptr;
+
+    auto label_it = zone_label_ptrs_.begin() + index;
+    scene_.removeItem(*label_it);
+    delete *label_it;
+    zone_label_ptrs_.erase(label_it);
+
+    auto zone_it = zones_.begin() + index;
+    zones_.erase(zone_it);
   }
 
   void MapView::addZones(QVector<UserZone> zones)

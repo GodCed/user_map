@@ -13,6 +13,7 @@ namespace user_map
   constexpr char TOPIC_USER_MAP[] = "user_map";
 
   constexpr char SERVICE_ADD_ZONES[] = "add_zones";
+  constexpr char SERVICE_REMOVE_ZONES[] = "remove_zones";
   constexpr char SERVICE_GET_ZONES[] = "get_zones";
   constexpr char SERVICE_CLEAR_ZONES[] = "clear_zones";
 

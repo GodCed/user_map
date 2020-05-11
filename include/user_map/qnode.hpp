@@ -14,7 +14,7 @@
 #include <QVector>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_msgs/GridMap.h>
-#include <user_map/zone.hpp>
+#include <user_map/user_zone.hpp>
 
 namespace user_map
 {
@@ -35,6 +35,7 @@ namespace user_map
 
   public Q_SLOTS:
     void addZone(UserZone zone);
+    void removeZone(long index);
     void clearZones();
     void getZones();
 
@@ -45,6 +46,7 @@ namespace user_map
 
     ros::Subscriber map_subscriber_;
     ros::ServiceClient srv_client_add_zones_;
+    ros::ServiceClient srv_client_remove_zones;
     ros::ServiceClient srv_client_clear_zones_;
     ros::ServiceClient srv_client_get_zones;
 

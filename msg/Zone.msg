@@ -1,6 +1,6 @@
-uint64 left
-uint64 top
-uint64 width
-uint64 height
+int32 left
+int32 top
+int32 width
+int32 height
 
-uint64 value
+int32 value

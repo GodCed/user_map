@@ -3,7 +3,7 @@
 #include <iostream>
 #include <user_map/main_window.hpp>
 #include <user_map/map_view.hpp>
-#include <user_map/zone.hpp>
+#include <user_map/user_zone.hpp>
 
 namespace user_map
 {
@@ -26,8 +26,11 @@ namespace user_map
     QObject::connect(&qnode, SIGNAL(newZones(QVector<UserZone>)), ui.map_view, SLOT(addZones(QVector<UserZone>)));
     QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), ui.map_view, SLOT(clearZones()));
     QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), &qnode, SLOT(clearZones()));
+    QObject::connect(ui.button_cancel_zone, SIGNAL(clicked()), ui.map_view, SLOT(cancelZone()));
     QObject::connect(ui.map_view, SIGNAL(newZone(UserZone)), &qnode, SLOT(addZone(UserZone)));
     QObject::connect(ui.map_view, SIGNAL(clearedZones()), &qnode, SLOT(clearZones()));
+    QObject::connect(ui.map_view, SIGNAL(deletedZone(long)), &qnode, SLOT(removeZone(long)));
+    QObject::connect(ui.button_remove_zone, SIGNAL(clicked()), ui.map_view, SLOT(deleteZone()));
 
     qnode.start();
     qnode.getZones();

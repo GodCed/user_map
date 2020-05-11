@@ -7,6 +7,7 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <user_map/orientation_mode.hpp>
 #include <user_map/AddZones.h>
+#include <user_map/RemoveZones.h>
 #include <user_map/GetZones.h>
 #include <user_map/ClearZones.h>
 #include <user_map/topics_and_layers.hpp>
@@ -27,6 +28,7 @@ namespace user_map
       pub_grid_map_ = nh_.advertise<grid_map_msgs::GridMap>(TOPIC_USER_MAP, 1, true);
 
       srv_add_zones_ = nh_.advertiseService(SERVICE_ADD_ZONES, &UserMapNode::onAddZones, this);
+      srv_remove_zones_ = nh_.advertiseService(SERVICE_REMOVE_ZONES, &UserMapNode::onRemoveZones, this);
       srv_get_zones_ = nh_.advertiseService(SERVICE_GET_ZONES, &UserMapNode::onGetZones, this);
       srv_clear_zones_ = nh_.advertiseService(SERVICE_CLEAR_ZONES, &UserMapNode::onClearZones, this);
 
@@ -46,6 +48,7 @@ namespace user_map
     ros::Publisher pub_grid_map_;
 
     ros::ServiceServer srv_add_zones_;
+    ros::ServiceServer srv_remove_zones_;
     ros::ServiceServer srv_get_zones_;
     ros::ServiceServer srv_clear_zones_;
 
@@ -69,6 +72,22 @@ namespace user_map
       zones_.insert(zones_.end(),
                     std::make_move_iterator(req.zones.begin()),
                     std::make_move_iterator(req.zones.end()));
+
+      if (grid_map_.exists(LAYER_OCCUPANCY))
+      {
+        createOrientationLayer();
+        publishGridMap();
+      }
+      return true;
+    }
+
+    bool onRemoveZones(user_map::RemoveZonesRequest& req, user_map::RemoveZonesResponse&)
+    {
+      long offset = 0;
+      for(auto index: req.indexes) {
+        zones_.erase(zones_.begin() + index + offset);
+        offset -= 1;
+      }
 
       if (grid_map_.exists(LAYER_OCCUPANCY))
       {

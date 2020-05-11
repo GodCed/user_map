@@ -8,6 +8,7 @@
 #include <user_map/qnode.hpp>
 #include <user_map/topics_and_layers.hpp>
 #include <user_map/AddZones.h>
+#include <user_map/RemoveZones.h>
 #include <user_map/ClearZones.h>
 #include <user_map/GetZones.h>
 
@@ -24,6 +25,9 @@ namespace user_map
 
     ros::service::waitForService(SERVICE_ADD_ZONES);
     srv_client_add_zones_ = nh_->serviceClient<user_map::AddZones>(SERVICE_ADD_ZONES, true);
+
+    ros::service::waitForService(SERVICE_REMOVE_ZONES);
+    srv_client_remove_zones = nh_->serviceClient<user_map::RemoveZones>(SERVICE_REMOVE_ZONES, true);
 
     ros::service::waitForService(SERVICE_CLEAR_ZONES);
     srv_client_clear_zones_ = nh_->serviceClient<user_map::ClearZones>(SERVICE_CLEAR_ZONES, true);
@@ -82,6 +86,13 @@ namespace user_map
     user_map::AddZones srv;
     srv.request.zones.push_back(zone);
     srv_client_add_zones_.call(srv);
+  }
+
+  void QNode::removeZone(long index)
+  {
+    user_map::RemoveZones srv;
+    srv.request.indexes.push_back(index);
+    srv_client_remove_zones.call(srv);
   }
 
   void QNode::clearZones()
