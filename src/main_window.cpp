@@ -4,6 +4,8 @@
 #include <user_map/main_window.hpp>
 #include <user_map/map_view.hpp>
 #include <user_map/user_zone.hpp>
+#include <user_map/qorientation_zone.hpp>
+#include <user_map/qcirculation_zone.hpp>
 
 namespace user_map
 {
@@ -23,11 +25,11 @@ namespace user_map
     ui.dial_orientation->setValue(180);
 
     QObject::connect(&qnode, SIGNAL(mapImageUpdated(QImage)), ui.map_view, SLOT(updateOccupancyGrid(QImage)));
-    QObject::connect(&qnode, SIGNAL(newZones(QVector<UserZone>)), ui.map_view, SLOT(addZones(QVector<UserZone>)));
+    QObject::connect(&qnode, SIGNAL(newZones(QVector<std::shared_ptr<QZone>>)), ui.map_view, SLOT(addZones(QVector<std::shared_ptr<QZone>>)));
     QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), ui.map_view, SLOT(clearZones()));
     QObject::connect(ui.button_clear_zones, SIGNAL(clicked()), &qnode, SLOT(clearZones()));
     QObject::connect(ui.button_cancel_zone, SIGNAL(clicked()), ui.map_view, SLOT(cancelZone()));
-    QObject::connect(ui.map_view, SIGNAL(newZone(UserZone)), &qnode, SLOT(addZone(UserZone)));
+    QObject::connect(ui.map_view, SIGNAL(newZone(std::shared_ptr<QZone>)), &qnode, SLOT(addZone(std::shared_ptr<QZone>)));
     QObject::connect(ui.map_view, SIGNAL(clearedZones()), &qnode, SLOT(clearZones()));
     QObject::connect(ui.map_view, SIGNAL(deletedZone(long)), &qnode, SLOT(removeZone(long)));
     QObject::connect(ui.button_remove_zone, SIGNAL(clicked()), ui.map_view, SLOT(deleteZone()));
@@ -41,14 +43,27 @@ namespace user_map
     qnode.quit();
   }
 
-  void MainWindow::on_button_add_zone_clicked()
+  void MainWindow::on_button_add_orientation_clicked()
   {
-    UserZone zone;
-    zone.angle = ui.spin_box_orientation->value();
-    zone.mode = orientation_mode_map[ui.combo_orientation_mode->currentText()];
+    std::shared_ptr<QOrientationZone> zone = std::make_shared<QOrientationZone>();
+    zone->setAngle(ui.spin_box_orientation->value());
+    zone->setMode(orientation_mode_map[ui.combo_orientation_mode->currentText()]);
 
     ui.map_view->addZone(zone);
   }
+
+
+  void MainWindow::on_button_add_keep_out_clicked()
+  {
+    ui.map_view->addZone(std::make_shared<QCirculationZone>(Circulation::Mode::keep_out));
+  }
+
+
+  void MainWindow::on_button_add_preferred_clicked()
+  {
+    ui.map_view->addZone(std::make_shared<QCirculationZone>(Circulation::Mode::preferred));
+  }
+
 
   void MainWindow::on_actionSave_Zones_triggered()
   {
@@ -102,6 +117,6 @@ namespace user_map
     int dial_value = (360 - value + 180) % 360;
     ui.dial_orientation->setValue(dial_value);
   }
+
+
 }  // namespace user_map
-
-

@@ -1,66 +1,67 @@
 #ifndef MAP_VIEW_H
 #define MAP_VIEW_H
 
+
 #include <QGraphicsView>
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsRectItem>
+#include <user_map/qzone.hpp>
 
-#include "user_zone.hpp"
 
 namespace user_map {
 
-class MapView : public QGraphicsView
-{
-Q_OBJECT
 
-  public:
-    MapView(QWidget* parent=nullptr);
-    void fitScene();
+  class MapView : public QGraphicsView
+  {
+  Q_OBJECT
 
-    void saveZonesToFile(QDataStream& filestream);
-    void loadZonesFromFile(QDataStream& filestream);
+    public:
 
-  private:
-    QGraphicsScene scene_;
+      MapView(QWidget* parent=nullptr);
+      void fitScene();
 
-    QGraphicsPixmapItem* occupancy_grid_ptr_ = nullptr;
+      void saveZonesToFile(QDataStream& filestream);
+      void loadZonesFromFile(QDataStream& filestream);
 
-    QGraphicsRectItem selection_rect_;
-    std::vector<QGraphicsRectItem*> zone_rect_ptrs_;
-    QGraphicsRectItem* selected_rect_ptr_ = nullptr;
+    private:
 
-    std::vector<QGraphicsSimpleTextItem*> zone_label_ptrs_;
+      QGraphicsScene scene_;
 
-    bool is_dragging_ = false;
-    bool is_adding_ = false;
-    QPointF drag_start_;
-    UserZone new_zone_;
+      QGraphicsPixmapItem* occupancy_grid_ptr_ = nullptr;
 
-    QVector<UserZone> zones_;
+      QGraphicsRectItem selection_rect_;
+      std::vector<QGraphicsRectItem*> zone_rect_ptrs_;
+      std::shared_ptr<QZone> selected_zone_ptr_;
 
-    QRect rectFromTwoPoints(QPoint a, QPoint b);
+      std::vector<QGraphicsSimpleTextItem*> zone_label_ptrs_;
 
-    void drawZone(UserZone zone);
-    void selectZone(QGraphicsRectItem* zone_rect_ptr);
-    void clearSelection();
+      bool is_dragging_ = false;
+      bool is_adding_ = false;
+      QPointF drag_start_;
 
-    void mousePressEvent(QMouseEvent* event);
-    void mouseReleaseEvent(QMouseEvent* event);
-    void mouseMoveEvent(QMouseEvent* event);
+      std::shared_ptr<QZone> new_zone_;
+      QVector<std::shared_ptr<QZone>> zones_;
 
-  public Q_SLOTS:
-    void updateOccupancyGrid(QImage grid);
-    void addZone(UserZone zone);
-    void deleteZone();
-    void cancelZone();
-    void addZones(QVector<UserZone> zones);
-    void clearZones();
+      QRect rectFromTwoPoints(QPoint a, QPoint b);
 
-  Q_SIGNALS:
-    void newZone(UserZone);
-    void deletedZone(long);
-    void clearedZones();
-};
+      void mousePressEvent(QMouseEvent* event);
+      void mouseReleaseEvent(QMouseEvent* event);
+      void mouseMoveEvent(QMouseEvent* event);
+
+    public Q_SLOTS:
+      void updateOccupancyGrid(QImage grid);
+      void addZone(std::shared_ptr<QZone> zone);
+      void deleteZone();
+      void cancelZone();
+      void addZones(QVector<std::shared_ptr<QZone>> zones);
+      void clearZones();
+
+    Q_SIGNALS:
+      void newZone(std::shared_ptr<QZone>);
+      void deletedZone(long);
+      void clearedZones();
+  };
+
 
 }
 

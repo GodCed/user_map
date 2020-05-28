@@ -11,6 +11,8 @@
 #include <user_map/GetZones.h>
 #include <user_map/ClearZones.h>
 #include <user_map/topics_and_layers.hpp>
+#include <user_map/zone_type.hpp>
+#include <user_map/circulation_mode.hpp>
 
 namespace user_map
 {
@@ -26,6 +28,7 @@ namespace user_map
 
       sub_occ_grid_ = nh_.subscribe(TOPIC_OCC_GRID, 1, &UserMapNode::onOccGrid, this);
       pub_grid_map_ = nh_.advertise<grid_map_msgs::GridMap>(TOPIC_USER_MAP, 1, true);
+      pub_occ_grid_ = nh_.advertise<nav_msgs::OccupancyGrid>(TOPIC_USER_OCC_GRID, 1, true);
 
       srv_add_zones_ = nh_.advertiseService(SERVICE_ADD_ZONES, &UserMapNode::onAddZones, this);
       srv_remove_zones_ = nh_.advertiseService(SERVICE_REMOVE_ZONES, &UserMapNode::onRemoveZones, this);
@@ -46,6 +49,7 @@ namespace user_map
 
     ros::Subscriber sub_occ_grid_;
     ros::Publisher pub_grid_map_;
+    ros::Publisher pub_occ_grid_;
 
     ros::ServiceServer srv_add_zones_;
     ros::ServiceServer srv_remove_zones_;
@@ -62,7 +66,7 @@ namespace user_map
       ROS_INFO("Received occupancy grid.");
 
       grid_map::GridMapRosConverter::fromOccupancyGrid(*msg, LAYER_OCCUPANCY, grid_map_);
-      createOrientationLayer();
+      createUserLayers();
 
       publishGridMap();
     }
@@ -75,7 +79,7 @@ namespace user_map
 
       if (grid_map_.exists(LAYER_OCCUPANCY))
       {
-        createOrientationLayer();
+        createUserLayers();
         publishGridMap();
       }
       return true;
@@ -91,7 +95,7 @@ namespace user_map
 
       if (grid_map_.exists(LAYER_OCCUPANCY))
       {
-        createOrientationLayer();
+        createUserLayers();
         publishGridMap();
       }
       return true;
@@ -109,7 +113,7 @@ namespace user_map
 
       if (grid_map_.exists(LAYER_OCCUPANCY))
       {
-        createOrientationLayer();
+        createUserLayers();
         publishGridMap();
       }
       return true;
@@ -125,20 +129,27 @@ namespace user_map
       }
     }
 
-    void createOrientationLayer()
+    void createUserLayers()
     {
-        grid_map_.add(LAYER_ORIENTATION, value_from_OrientationMode(OrientationMode::none, 0));
+      grid_map_.add(LAYER_ORIENTATION, value_from_OrientationMode(OrientationMode::none, 0));
+      grid_map_.add(LAYER_CIRCULATION, 20);
 
-        for (auto& zone: zones_)
+      for (auto& zone: zones_)
+      {
+         grid_map::Index start_index(zone.top, zone.left);
+         grid_map::Index buffer_size(zone.height, zone.width);
+
+        for (grid_map::SubmapIterator i(grid_map_, start_index, buffer_size); !i.isPastEnd(); ++i)
         {
-          grid_map::Index start_index(zone.top, zone.left);
-          grid_map::Index buffer_size(zone.height, zone.width);
-
-          for (grid_map::SubmapIterator i(grid_map_, start_index, buffer_size); !i.isPastEnd(); ++i)
-          {
-            grid_map_.at(LAYER_ORIENTATION, *i) = zone.value;
+          QZoneType type = static_cast<QZoneType>(zone.type);
+          switch (type) {
+            case orientation: grid_map_.at(LAYER_ORIENTATION, *i) = zone.value; break;
+            case circulation: grid_map_.at(LAYER_CIRCULATION, *i) = zone.value; break;
           }
         }
+      }
+
+      grid_map_.add(LAYER_COST, grid_map_[LAYER_OCCUPANCY] + grid_map_[LAYER_CIRCULATION]);
     }
 
     void publishGridMap() const
@@ -146,7 +157,11 @@ namespace user_map
       grid_map_msgs::GridMap grid_map_msg;
       grid_map::GridMapRosConverter::toMessage(grid_map_, grid_map_msg);
 
+      nav_msgs::OccupancyGrid occ_grid_msg;
+      grid_map::GridMapRosConverter::toOccupancyGrid(grid_map_, LAYER_COST, -1, 100, occ_grid_msg);
+
       pub_grid_map_.publish(grid_map_msg);
+      pub_occ_grid_.publish(occ_grid_msg);
     }
 
     void saveZones()
@@ -179,7 +194,7 @@ namespace user_map
         }
         if (grid_map_.exists(LAYER_OCCUPANCY))
         {
-          createOrientationLayer();
+          createUserLayers();
           publishGridMap();
         }
       }

@@ -7,9 +7,12 @@ namespace user_map
   constexpr char USER_MAP_GUI_NODE_NAME[] = "user_map_gui";
 
   constexpr char LAYER_OCCUPANCY[] = "occupancy";
+  constexpr char LAYER_CIRCULATION[] = "circulation";
   constexpr char LAYER_ORIENTATION[] = "orientation";
+  constexpr char LAYER_COST[] = "costmap";
 
   constexpr char TOPIC_OCC_GRID[] = "map";
+  constexpr char TOPIC_USER_OCC_GRID[] = "user_occ";
   constexpr char TOPIC_USER_MAP[] = "user_map";
 
   constexpr char SERVICE_ADD_ZONES[] = "add_zones";

@@ -14,7 +14,7 @@
 #include <QVector>
 #include <grid_map_core/GridMap.hpp>
 #include <grid_map_msgs/GridMap.h>
-#include <user_map/user_zone.hpp>
+#include <user_map/qzone.hpp>
 
 namespace user_map
 {
@@ -30,11 +30,11 @@ namespace user_map
 
   Q_SIGNALS:
     void rosShutdown();
-    void newZones(QVector<UserZone>);
+    void newZones(QVector<std::shared_ptr<QZone>>);
     void mapImageUpdated(QImage image);
 
   public Q_SLOTS:
-    void addZone(UserZone zone);
+    void addZone(std::shared_ptr<QZone> zone);
     void removeZone(long index);
     void clearZones();
     void getZones();

@@ -93,6 +93,9 @@ set(QT_MOC
     include/user_map/map_view.hpp
     include/user_map/orientation_mode.hpp
     include/user_map/qnode.hpp
+    include/user_map/qzone.hpp
+    include/user_map/qorientation_zone.hpp
+    include/user_map/qcirculation_zone.hpp
 )
 
 QT4_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
@@ -114,6 +117,9 @@ set(QT_SOURCES
     src/main_window.cpp
     src/map_view.cpp
     src/qnode.cpp
+    src/qzone.cpp
+    src/qorientation_zone.cpp
+    src/qcirculation_zone.cpp
 )
 
 ##############################################################################

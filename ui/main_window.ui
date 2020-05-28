@@ -33,86 +33,122 @@
      </widget>
     </item>
     <item>
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>Zones</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QComboBox" name="combo_orientation_mode"/>
-       </item>
-       <item>
-        <widget class="QDial" name="dial_orientation">
-         <property name="maximum">
-          <number>359</number>
-         </property>
-         <property name="wrapping">
-          <bool>true</bool>
-         </property>
-         <property name="notchTarget">
-          <double>20.000000000000000</double>
-         </property>
-         <property name="notchesVisible">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="spin_box_orientation">
-         <property name="wrapping">
-          <bool>true</bool>
-         </property>
-         <property name="suffix">
-          <string> deg</string>
-         </property>
-         <property name="maximum">
-          <number>359</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_add_zone">
-         <property name="text">
-          <string>Add</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_remove_zone">
-         <property name="text">
-          <string>Remove</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_cancel_zone">
-         <property name="text">
-          <string>Cancel</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_clear_zones">
-         <property name="text">
-          <string>Clear</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QGroupBox" name="groupBox_2">
+        <property name="title">
+         <string>Orientation</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QComboBox" name="combo_orientation_mode"/>
+         </item>
+         <item>
+          <widget class="QDial" name="dial_orientation">
+           <property name="maximum">
+            <number>359</number>
+           </property>
+           <property name="wrapping">
+            <bool>true</bool>
+           </property>
+           <property name="notchTarget">
+            <double>20.000000000000000</double>
+           </property>
+           <property name="notchesVisible">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spin_box_orientation">
+           <property name="wrapping">
+            <bool>true</bool>
+           </property>
+           <property name="suffix">
+            <string> deg</string>
+           </property>
+           <property name="maximum">
+            <number>359</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_add_orientation">
+           <property name="text">
+            <string>Add</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Circulation</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QPushButton" name="button_add_preferred">
+           <property name="text">
+            <string>Preferred</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_add_keep_out">
+           <property name="text">
+            <string>Keep Out</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Zone</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QPushButton" name="button_cancel_zone">
+           <property name="text">
+            <string>Cancel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_remove_zone">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_clear_zones">
+           <property name="text">
+            <string>Clear All</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

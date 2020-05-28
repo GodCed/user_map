@@ -65,23 +65,16 @@ namespace user_map
     Q_EMIT mapImageUpdated(map_qimage);
   }
 
-  void QNode::addZone(UserZone user_zone)
+  void QNode::addZone(std::shared_ptr<QZone> user_zone)
   {
-    int orientation_value = value_from_OrientationMode(user_zone.mode, user_zone.angle);
+    user_map::Zone zone = user_zone->toZoneMsg();
 
-    grid_map::Index submap_start_index(user_zone.rect.top(), user_zone.rect.left());
-    grid_map::Index submap_buffer_size(user_zone.rect.height(), user_zone.rect.width());
+    grid_map::Index submap_start_index(zone.top, zone.left);
+    grid_map::Index submap_buffer_size(zone.height, zone.width);
 
     for (grid_map::SubmapIterator i(map_, submap_start_index, submap_buffer_size); !i.isPastEnd(); ++i) {
-      map_.at("orientation", *i) = orientation_value;
+      map_.at("orientation", *i) = zone.value;
     }
-
-    user_map::Zone zone;
-    zone.top = user_zone.rect.top();
-    zone.left = user_zone.rect.left();
-    zone.width = user_zone.rect.width();
-    zone.height = user_zone.rect.height();
-    zone.value = orientation_value;
 
     user_map::AddZones srv;
     srv.request.zones.push_back(zone);
@@ -111,9 +104,15 @@ namespace user_map
     user_map::GetZones srv;
     if (srv_client_get_zones.call(srv))
     {
-      QVector<UserZone> userZones;
-      std::copy(srv.response.zones.begin(), srv.response.zones.end(), std::back_inserter(userZones));
-      Q_EMIT newZones(userZones);
+      QVector<std::shared_ptr<QZone>> user_zones;
+      std::shared_ptr<QZone> user_zone;
+      for (auto &zone: srv.response.zones) {
+        user_zone = QZone::fromZoneMsg(zone);
+        if (user_zone) {
+          user_zones.append(user_zone);
+        }
+      }
+      Q_EMIT newZones(user_zones);
     }
   }
 }  // namespace user_map

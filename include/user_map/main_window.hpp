@@ -19,11 +19,13 @@ namespace user_map
 
   private Q_SLOTS:
     void on_actionAbout_triggered();
-    void on_button_add_zone_clicked();
+    void on_button_add_orientation_clicked();
     void on_actionLoad_Zones_triggered();
     void on_actionSave_Zones_triggered();
     void on_dial_orientation_valueChanged(int value);
     void on_spin_box_orientation_valueChanged(int arg1);
+    void on_button_add_keep_out_clicked();
+    void on_button_add_preferred_clicked();
 
   protected:
     Ui::MainWindowDesign ui;
