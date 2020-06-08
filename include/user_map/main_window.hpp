@@ -1,7 +1,7 @@
 #ifndef user_map_MAIN_WINDOW_HPP
 #define user_map_MAIN_WINDOW_HPP
 
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "map_view.hpp"
 #include "ui_main_window.h"
 #include "qnode.hpp"
@@ -14,7 +14,7 @@ namespace user_map
 
   public:
     MainWindow(int argc, char** argv, QWidget *parent = nullptr);
-    ~MainWindow();
+    virtual ~MainWindow();
     void resizeEvent(QResizeEvent *event); // Overloaded function
 
   private Q_SLOTS:

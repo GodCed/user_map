@@ -1,17 +1,27 @@
 ##############################################################################
-# CMake
+# CMake configuration
 ##############################################################################
 
-cmake_minimum_required(VERSION 2.8.0)
+
+cmake_minimum_required(VERSION 2.8.3)
 project(user_map)
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_CXX_STANDARD 14)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS ui)
+
+
 ##############################################################################
-# Dependencies
+# Dependencies and include paths
 ##############################################################################
 
-# qt_build provides the qt cmake glue, roscpp the comms for a default talker
+
 find_package(catkin REQUIRED COMPONENTS
-    qt_build
     roscpp
     eigen_conversions
     grid_map_ros
@@ -23,14 +33,22 @@ find_package(OpenCV REQUIRED
     imgproc
 )
 
+find_package(Qt5 COMPONENTS
+    Widgets
+    REQUIRED
+)
+
 include_directories(
     include
     ${catkin_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
+
 ##############################################################################
-# Catkin
+# Catkin package
 ##############################################################################
+
 
 add_message_files(
     FILES
@@ -50,12 +68,10 @@ generate_messages(
         std_msgs
 )
 
-# Use this to define what the package will export (e.g. libs, headers).
 catkin_package(
     INCLUDE_DIRS
         include
     CATKIN_DEPENDS
-        qt_build
         roscpp
         eigen_conversions
         grid_map_ros
@@ -64,54 +80,30 @@ catkin_package(
         OpenCV
 )
 
-##############################################################################
-# Qt Environment
-##############################################################################
-
-# this comes from qt_build's qt-ros.cmake which is automatically 
-# included via the dependency call in package.xml
-# Add the appropriate components to the component list here
-rosbuild_prepare_qt4(
-    QtCore
-    QtGui
-)
 
 ##############################################################################
-# GUI Sections
+# GUI
 ##############################################################################
 
+
+# UI files
 set(QT_FORMS
     ui/main_window.ui
 )
 
+# Ressources
 set(QT_RESOURCES
     resources/images.qrc
 )
 
-set(QT_MOC
+# Headers of QObject classes (for MOC)
+set(QT_HEADERS
     include/user_map/main_window.hpp
     include/user_map/map_view.hpp
-    include/user_map/orientation_mode.hpp
     include/user_map/qnode.hpp
-    include/user_map/qzone.hpp
-    include/user_map/qorientation_zone.hpp
-    include/user_map/qcirculation_zone.hpp
 )
 
-QT4_ADD_RESOURCES(QT_RESOURCES_CPP ${QT_RESOURCES})
-QT4_WRAP_UI(QT_FORMS_HPP ${QT_FORMS})
-QT4_WRAP_CPP(QT_MOC_HPP ${QT_MOC})
-
-##############################################################################
 # Sources
-##############################################################################
-
-# Node
-set(NODE_SOURCES
-    src/user_map_node.cpp
-)
-
-# GUI
 set(QT_SOURCES
     src/main.cpp
     src/main_window.cpp
@@ -122,23 +114,32 @@ set(QT_SOURCES
     src/qcirculation_zone.cpp
 )
 
+# Target
+add_executable(user_map_gui ${QT_HEADERS} ${QT_SOURCES} ${QT_RESOURCES} ${QT_FORMS})
+target_link_libraries(user_map_gui Qt5::Widgets ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+
+
 ##############################################################################
-# Binaries
+# Node
 ##############################################################################
 
-# Node
+
+# Sources
+set(NODE_SOURCES
+    src/user_map_node.cpp
+)
+
+# Target
 add_executable(user_map_node ${NODE_SOURCES})
 target_link_libraries(user_map_node ${catkin_LIBRARIES})
 
-# GUI
-add_executable(user_map_gui ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP})
-target_link_libraries(user_map_gui ${QT_LIBRARIES} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 ##############################################################################
 # Install
 ##############################################################################
 
-# GUI
+
+# Binaries
 install(
     TARGETS user_map_node user_map_gui
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
@@ -149,3 +150,4 @@ install(
         include/user_map/orientation_mode.hpp
     DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
+
