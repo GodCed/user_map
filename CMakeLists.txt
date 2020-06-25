@@ -117,6 +117,7 @@ set(QT_SOURCES
 # Target
 add_executable(user_map_gui ${QT_HEADERS} ${QT_SOURCES} ${QT_RESOURCES} ${QT_FORMS})
 target_link_libraries(user_map_gui Qt5::Widgets ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
+add_dependencies(user_map_gui ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
 ##############################################################################
@@ -132,6 +133,7 @@ set(NODE_SOURCES
 # Target
 add_executable(user_map_node ${NODE_SOURCES})
 target_link_libraries(user_map_node ${catkin_LIBRARIES})
+add_dependencies(user_map_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
 ##############################################################################
